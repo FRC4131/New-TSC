@@ -18,28 +18,24 @@ import edu.wpi.first.wpilibj.GenericHID.Hand;
 import edu.wpi.first.wpilibj.drive.DifferentialDrive;
 
 public class Robot extends TimedRobot {
+
     final int pcm = 61;
-  
+
     int barrel = 0;
 
-      boolean hasFired = false;
+    boolean hasFired = false;
 
     Timer cannonTimer = new Timer();
 
-    Spark l1 = new Spark(0);
-    Spark l2 = new Spark(1);
-    Spark r3 = new Spark(2);
-    Spark r4 = new Spark(3);
-    Spark turret = new Spark(4);
-  
-    SpeedControllerGroup r = new SpeedControllerGroup(r3,r4);
-    SpeedControllerGroup l = new SpeedControllerGroup(l1,l2);
-  
-    DifferentialDrive drive = new DifferentialDrive(l,r);
-  
+    Spark l1 = new Spark(2);
+    Spark l2 = new Spark(5);
+    Spark r1 = new Spark(3);
+    Spark r2 = new Spark(4);
+    Spark turret = new Spark(1);
+
     Hand leftHand = GenericHID.Hand.kLeft;
     Hand rightHand = GenericHID.Hand.kRight;
-  
+
     XboxController controller = new XboxController(0);
 
     Solenoid barrelZero = new Solenoid(pcm, 0);
@@ -57,17 +53,29 @@ public class Robot extends TimedRobot {
 
     @Override
     public void teleopInit() {
+        cannonTimer.start();
     }
-    
+
     @Override
     public void teleopPeriodic() {
-        drive.arcadeDrive(controller.getY(leftHand), controller.getX(rightHand));
-        
+        drive();
+
         turretRotate();
-        
+
         fire();
     }
-  
+
+    public void drive() {
+        double straight = -controller.getY(leftHand);
+        double rotate = controller.getX(rightHand);
+
+        l1.set(rotate + straight);
+        l2.set(rotate + straight);
+
+        r1.set(rotate - straight);
+        r2.set(rotate - straight);
+    }
+
     public void turretRotate() {
         if (controller.getPOV() == 90) {
             turret.set(0.2);
@@ -77,18 +85,25 @@ public class Robot extends TimedRobot {
             turret.set(0);
         }
     }
-  
+
     public void fire() {
-        if (controller.getBumper(rightHand) && !hasFired && cannonTimer.get() < 0.25) {
+        if (controller.getBumper(rightHand) && !hasFired && cannonTimer.get() > 1) {
+            cannonTimer.stop();
+            cannonTimer.reset();
             solenoidArray[barrel].set(true);
             cannonTimer.start();
             hasFired = true;
-        } else if (cannonTimer.get() >= 0.25) {
+        } else if (cannonTimer.get() >= 0.25 && hasFired) {
             cannonTimer.stop();
             cannonTimer.reset();
             hasFired = false;
             solenoidArray[barrel].set(false);
-            barrel++;
+            if (barrel == 5) {
+                barrel = 0;
+            } else {
+                barrel++;
+            }
+            cannonTimer.start();
         } else {
             return;
         }
