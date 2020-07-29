@@ -7,15 +7,10 @@
 
 package frc.robot;
 
-import edu.wpi.first.wpilibj.Solenoid;
-import edu.wpi.first.wpilibj.Spark;
-import edu.wpi.first.wpilibj.SpeedControllerGroup;
-import edu.wpi.first.wpilibj.TimedRobot;
-import edu.wpi.first.wpilibj.Timer;
-import edu.wpi.first.wpilibj.XboxController;
-import edu.wpi.first.wpilibj.GenericHID;
+import edu.wpi.first.wpilibj.*;
 import edu.wpi.first.wpilibj.GenericHID.Hand;
 import edu.wpi.first.wpilibj.drive.DifferentialDrive;
+import edu.wpi.first.wpilibj.smartdashboard.SmartDashboard;
 
 public class Robot extends TimedRobot {
 
@@ -40,12 +35,16 @@ public class Robot extends TimedRobot {
 
     Solenoid barrelZero = new Solenoid(pcm, 0);
     Solenoid barrelOne = new Solenoid(pcm, 1);
+
+
     Solenoid barrelTwo = new Solenoid(pcm, 2);
     Solenoid barrelThree = new Solenoid(pcm, 3);
     Solenoid barrelFour = new Solenoid(pcm, 4);
     Solenoid barrelFive = new Solenoid(pcm, 5);
 
     Solenoid[] solenoidArray = {barrelZero, barrelOne, barrelTwo, barrelThree, barrelFour, barrelFive};
+
+    AnalogInput pressureSensor = new AnalogInput(0);//this is the pressure sensor -andrew
 
     @Override
     public void robotInit() {
@@ -74,6 +73,7 @@ public class Robot extends TimedRobot {
 
         r1.set(rotate - straight);
         r2.set(rotate - straight);
+        SmartDashboard.putNumber("Pressure Sensor:", 50*pressureSensor.getValue()-25);//put val to smdb
     }
 
     public void turretRotate() {
