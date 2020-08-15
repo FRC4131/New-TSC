@@ -26,7 +26,9 @@ public class Robot extends TimedRobot {
     Spark l2 = new Spark(5);
     Spark r1 = new Spark(3);
     Spark r2 = new Spark(4);
-    Spark turret = new Spark(1);
+    Spark turretRotation = new Spark(1);
+    Spark turretElev = new Spark(6);
+
 
     Hand leftHand = GenericHID.Hand.kLeft;
     Hand rightHand = GenericHID.Hand.kRight;
@@ -35,8 +37,6 @@ public class Robot extends TimedRobot {
 
     Solenoid barrelZero = new Solenoid(pcm, 0);
     Solenoid barrelOne = new Solenoid(pcm, 1);
-
-
     Solenoid barrelTwo = new Solenoid(pcm, 2);
     Solenoid barrelThree = new Solenoid(pcm, 3);
     Solenoid barrelFour = new Solenoid(pcm, 4);
@@ -53,6 +53,8 @@ public class Robot extends TimedRobot {
     @Override
     public void teleopInit() {
         cannonTimer.start();
+        turretElev.set(0);
+        turretRotation.set(0);
     }
 
     @Override
@@ -60,6 +62,8 @@ public class Robot extends TimedRobot {
         drive();
 
         turretRotate();
+
+        elevation();
 
         fire();
     }
@@ -73,27 +77,35 @@ public class Robot extends TimedRobot {
 
         r1.set(rotate - straight);
         r2.set(rotate - straight);
-        SmartDashboard.putNumber("Pressure Sensor:", 50*pressureSensor.getValue()-25);//put val to smdb
+        SmartDashboard.putNumber("Pressure Sensor:", 50*pressureSensor.getVoltage()-24);//put val to smdb
     }
 
-    public void turretRotate() {
-        if (controller.getPOV() == 90) {
-            turret.set(0.2);
-        } else if (controller.getPOV() == 270) {
-            turret.set(-0.2);
+    public void elevation() {
+        if (controller.getPOV() == 0){
+            turretElev.set(0.4);
+        } else if (controller.getPOV() == 180){
+            turretElev.set(-0.4);
         } else {
-            turret.set(0);
+            turretElev.set(0);
         }
     }
-
+    public void turretRotate() {
+        if (controller.getPOV() == 90) {
+            turretRotation.set(0.4); //turret rather than turretrotation for old version
+        } else if (controller.getPOV() == 270) {
+            turretRotation.set(-0.4);
+        } else {
+            turretRotation.set(0);
+        }
+    }
     public void fire() {
-        if (controller.getBumper(rightHand) && !hasFired && cannonTimer.get() > 1) {
+        if (controller.getBumper(rightHand) && !hasFired && cannonTimer.get() > 1) { //make sure reloaded, hasn't just fired, and has had time to swivel/reload
             cannonTimer.stop();
             cannonTimer.reset();
             solenoidArray[barrel].set(true);
             cannonTimer.start();
             hasFired = true;
-        } else if (cannonTimer.get() >= 0.25 && hasFired) {
+        } else if (cannonTimer.get() >= 0.25 && hasFired) { //has had time to fire, so switch barrel
             cannonTimer.stop();
             cannonTimer.reset();
             hasFired = false;
@@ -105,7 +117,7 @@ public class Robot extends TimedRobot {
             }
             cannonTimer.start();
         } else {
-            return;
+            return; //stop doing things
         }
     }
 }
