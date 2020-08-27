@@ -20,6 +20,10 @@ public class Robot extends TimedRobot {
 
     boolean hasFired = false;
 
+    boolean forward;
+
+    boolean backward;
+
     Timer cannonTimer = new Timer();
 
     Spark l1 = new Spark(2);
@@ -29,6 +33,8 @@ public class Robot extends TimedRobot {
     Spark turretRotation = new Spark(1);
     Spark turretElev = new Spark(6);
 
+    DigitalInput forwardStop = new DigitalInput(0);
+    DigitalInput backwardStop = new DigitalInput(1);
 
     Hand leftHand = GenericHID.Hand.kLeft;
     Hand rightHand = GenericHID.Hand.kRight;
@@ -59,6 +65,9 @@ public class Robot extends TimedRobot {
 
     @Override
     public void teleopPeriodic() {
+        System.out.println(forward);
+        System.out.println(backward);
+
         drive();
 
         turretRotate();
@@ -71,6 +80,8 @@ public class Robot extends TimedRobot {
     public void drive() {
         double straight = -controller.getY(leftHand);
         double rotate = controller.getX(rightHand);
+        forward = forwardStop.get();
+        backward = backwardStop.get();
 
         l1.set(rotate + straight);
         l2.set(rotate + straight);
@@ -81,9 +92,9 @@ public class Robot extends TimedRobot {
     }
 
     public void elevation() {
-        if (controller.getPOV() == 0){
+        if (controller.getPOV() == 0 && backward){
             turretElev.set(0.4);
-        } else if (controller.getPOV() == 180){
+        } else if (controller.getPOV() == 180 && forward){
             turretElev.set(-0.4);
         } else {
             turretElev.set(0);
