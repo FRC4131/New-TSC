@@ -15,13 +15,9 @@ import edu.wpi.first.wpilibj.smartdashboard.SmartDashboard;
 public class Robot extends TimedRobot {
 
     final int pcm = 61;
-
     int barrel = 0;
-
     boolean hasFired = false;
-
     boolean forward;
-
     boolean backward;
 
     Timer cannonTimer = new Timer();
@@ -50,7 +46,7 @@ public class Robot extends TimedRobot {
 
     Solenoid[] solenoidArray = {barrelZero, barrelOne, barrelTwo, barrelThree, barrelFour, barrelFive};
 
-    AnalogInput pressureSensor = new AnalogInput(0);//this is the pressure sensor -andrew
+    AnalogInput pressureSensor = new AnalogInput(0);
 
     @Override
     public void robotInit() {
@@ -69,11 +65,8 @@ public class Robot extends TimedRobot {
         System.out.println(backward);
 
         drive();
-
         turretRotate();
-
         elevation();
-
         fire();
     }
 
@@ -93,18 +86,18 @@ public class Robot extends TimedRobot {
 
     public void elevation() {
         if (controller.getPOV() == 0 && backward){
-            turretElev.set(0.4);
+            turretElev.set(0.6);
         } else if (controller.getPOV() == 180 && forward){
-            turretElev.set(-0.4);
+            turretElev.set(-0.6);
         } else {
             turretElev.set(0);
         }
     }
     public void turretRotate() {
         if (controller.getPOV() == 90) {
-            turretRotation.set(0.4); //turret rather than turretrotation for old version
+            turretRotation.set(0.8); //turret rather than turretrotation for old version
         } else if (controller.getPOV() == 270) {
-            turretRotation.set(-0.4);
+            turretRotation.set(-0.8);
         } else {
             turretRotation.set(0);
         }
@@ -116,7 +109,7 @@ public class Robot extends TimedRobot {
             solenoidArray[barrel].set(true);
             cannonTimer.start();
             hasFired = true;
-        } else if (cannonTimer.get() >= 0.25 && hasFired) { //has had time to fire, so switch barrel
+        } else if (cannonTimer.get() >= 0.95 && hasFired) { //has had time to fire, so switch barrel
             cannonTimer.stop();
             cannonTimer.reset();
             hasFired = false;
